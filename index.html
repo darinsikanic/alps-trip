@@ -1541,8 +1541,8 @@
       <div class="ph-mountains"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:88px;height:88px;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.4))"><path fill="#3792CF" d="M64.224,34.453c-0.71-1.739-3.173-1.739-3.883,0l-24.51,60.039h52.903L64.224,34.453z"/><path fill="#6AC9CC" d="M34.616,45.115c-0.584-1.43-2.609-1.43-3.193,0L11.266,94.492h24.565l9.471-23.2L34.616,45.115z"/><circle fill="#FEE36F" cx="50" cy="17.705" r="9.036"/><path fill="#136296" d="M94.494,93.986h-5.42L64.692,34.262c-0.408-0.999-1.331-1.619-2.41-1.619c-1.078,0-2.002,0.62-2.409,1.619L45.302,69.954L35.084,44.924c-0.349-0.856-1.14-1.387-2.065-1.387s-1.715,0.531-2.065,1.387L10.926,93.986h-5.42C5.226,93.986,5,94.213,5,94.492s0.226,0.506,0.506,0.506h88.988c0.279,0,0.506-0.226,0.506-0.506S94.774,93.986,94.494,93.986z"/></svg></div>
       <h3>Alps Trip Album</h3>
       <p>All the best shots from Courmayeur, Zermatt &amp; Milan — shared with the whole group</p>
-      <a href="https://www.icloud.com/sharedalbum/#B1x5qXGF1DqW44" target="_blank" class="ph-open-btn">
-        <span class="btn-icon"><i class="iconoir-home-simple"></i></span> Open Shared Album
+      <a href="https://www.icloud.com/sharedalbum/#B1x5qXGF1DqW44" onclick="openSharedAlbum(event)" class="ph-open-btn">
+        <span class="btn-icon"><i class="iconoir-home-simple"></i></span> Open in Photos
       </a>
     </div>
     <div class="ph-card-footer">
@@ -1571,6 +1571,26 @@
     if (id === 'live' && !liveLoaded) { liveLoaded = true; loadAllLive(); }
   }
   function toggleDay(header) { header.parentElement.classList.toggle('open'); }
+
+  /* ── iCLOUD SHARED ALBUM — open in Photos app on Apple devices ── */
+  function openSharedAlbum(e) {
+    const url = 'https://www.icloud.com/sharedalbum/#B1x5qXGF1DqW44';
+    const ua  = navigator.userAgent;
+    const isApple = /iPhone|iPad|iPod/.test(ua) ||
+                    (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1); // iPadOS
+    if (isApple) {
+      // Navigating the current window lets Safari handle icloud.com
+      // as a universal link and hand off to the Photos app.
+      e.preventDefault();
+      window.location.href = url;
+    }
+    // On non-Apple devices the default href + no target="_blank" would
+    // leave the page, so open a new tab instead.
+    else {
+      e.preventDefault();
+      window.open(url, '_blank', 'noopener');
+    }
+  }
 
   /* ── WMO WEATHER CODES ── */
   const WMO_ICON = {0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌦️',55:'🌦️',56:'🌦️',57:'🌦️',61:'🌧️',63:'🌧️',65:'🌧️',66:'🌧️',67:'🌧️',71:'❄️',73:'❄️',75:'❄️',77:'🌨️',80:'🌦️',81:'🌧️',82:'⛈️',85:'🌨️',86:'🌨️',95:'⛈️',96:'⛈️',99:'⛈️'};
