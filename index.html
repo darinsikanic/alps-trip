@@ -1,0 +1,1791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Courmayeur & Zermatt · March–April 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/css/iconoir.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary:   #1a2e44;
+      --cour:      #2e7d32;
+      --zerm:      #c62828;
+      --milan:     #6d4c41;
+      --bg:        #f4f5f7;
+      --card:      #ffffff;
+      --text:      #1a2e44;
+      --muted:     #6b7280;
+      --border:    #e2e5ea;
+      --shadow:    0 2px 12px rgba(0,0,0,0.07);
+      --radius:    12px;
+    }
+
+    body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+    h1, h2, .section-header h2 { font-family: 'Playfair Display', Georgia, serif; font-weight: 400; }
+    i[class*="iconoir-"] { font-style: normal; }
+
+    /* ── HEADER ── */
+    header {
+      background: linear-gradient(150deg, #0d1f30 0%, #1a3a5c 50%, #0d2e1a 100%);
+      color: white;
+      padding: 56px 24px 44px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 40 L20 10 L40 40 L60 10 L80 40' stroke='rgba(255,255,255,0.04)' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") repeat-x bottom;
+    }
+    header h1 {
+      font-size: clamp(1.8rem, 5vw, 3.2rem);
+      font-weight: normal;
+      letter-spacing: 0.03em;
+      margin-bottom: 6px;
+      position: relative;
+    }
+    header .subtitle {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 0.9rem;
+      opacity: 0.65;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .pill-row {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 20px;
+      position: relative;
+    }
+    .pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 999px;
+      padding: 5px 14px;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 0.82rem;
+      white-space: nowrap;
+    }
+
+    /* ── NAV ── */
+    nav {
+      background: white;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .nav-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .nav-inner::-webkit-scrollbar { display: none; }
+    .nav-btn {
+      flex-shrink: 0;
+      padding: 15px 20px;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all 0.2s;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .nav-btn i[class*="iconoir-"] { font-size: 1rem; }
+    .nav-btn:hover { color: var(--text); }
+    .nav-btn.active         { color: var(--primary); border-bottom-color: var(--primary); }
+    .nav-btn.cour.active    { color: var(--cour);    border-bottom-color: var(--cour); }
+    .nav-btn.zerm.active    { color: var(--zerm);    border-bottom-color: var(--zerm); }
+    .nav-btn.milan.active   { color: var(--milan);   border-bottom-color: var(--milan); }
+
+    /* ── MAIN ── */
+    main { max-width: 960px; margin: 0 auto; padding: 32px 16px 80px; }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* ── SECTION HEADER ── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 28px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .section-icon { font-size: 2rem; flex-shrink: 0; display:flex; align-items:center; justify-content:center; width:2.6rem; height:2.6rem; }
+    .section-icon svg { width:2.2rem; height:2.2rem; }
+    .section-header h2 { font-size: 1.7rem; font-weight: 400; letter-spacing: -0.01em; }
+    .section-header .dates { font-family:'Inter',system-ui,sans-serif; font-size:0.82rem; color:var(--muted); margin-top:2px; }
+    .badge {
+      margin-left: auto;
+      padding: 4px 14px;
+      border-radius: 999px;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+    .badge-cour  { background:#e8f5e9; color:var(--cour); }
+    .badge-zerm  { background:#fce8e8; color:var(--zerm); }
+    .badge-milan { background:#efebe9; color:var(--milan); }
+
+    /* ── DAY CARDS ── */
+    .day-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      margin-bottom: 14px;
+      overflow: hidden;
+      transition: box-shadow 0.2s;
+    }
+    .day-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+    .day-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 22px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .day-num {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 0.72rem; font-weight: 700;
+      flex-shrink: 0;
+      border: 2px solid var(--border);
+      background: var(--bg);
+      color: var(--muted);
+    }
+    .cour-card .day-num  { border-color:var(--cour);  color:var(--cour);  background:#f1f8f1; }
+    .zerm-card .day-num  { border-color:var(--zerm);  color:var(--zerm);  background:#fdf0f0; }
+    .milan-card .day-num { border-color:var(--milan); color:var(--milan); background:#f5f0ee; }
+    .day-title { flex: 1; }
+    .day-title strong { display:block; font-family:'Inter',system-ui,sans-serif; font-size:0.95rem; font-weight:600; }
+    .day-title .day-date { font-family:'Inter',system-ui,sans-serif; font-size:0.78rem; color:var(--muted); margin-top:1px; }
+    .day-tags { display:flex; gap:5px; flex-wrap:wrap; }
+    .tag {
+      font-family:'Inter',system-ui,sans-serif; font-size:0.7rem;
+      padding:2px 9px; border-radius:999px;
+      background:var(--bg); color:var(--muted); border:1px solid var(--border);
+      display:inline-flex; align-items:center; gap:4px;
+    }
+    .chevron { font-size:0.75rem; color:var(--muted); transition:transform 0.25s; flex-shrink:0; }
+    .day-card.open .chevron { transform:rotate(180deg); }
+    .day-body { display:none; border-top:1px solid var(--border); }
+    .day-card.open .day-body { display:block; }
+
+    /* ── TIMELINE ── */
+    .timeline { padding:20px 22px 22px; }
+    .tl-item { display:flex; gap:14px; margin-bottom:20px; }
+    .tl-item:last-child { margin-bottom:0; }
+    .tl-left { display:flex; flex-direction:column; align-items:center; width:34px; flex-shrink:0; }
+    .tl-icon { width:34px; height:34px; border-radius:50%; background:var(--bg); border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:0.95rem; flex-shrink:0; color:var(--primary); }
+    .tl-line { width:2px; flex:1; background:var(--border); margin-top:4px; min-height:14px; }
+    .tl-item:last-child .tl-line { display:none; }
+    .tl-content { padding-top:5px; }
+    .tl-time { font-family:'Inter',system-ui,sans-serif; font-size:0.68rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:1px; }
+    .tl-title { font-family:'Inter',system-ui,sans-serif; font-size:0.92rem; font-weight:600; margin-bottom:3px; }
+    .tl-title a { color:inherit; text-decoration:underline; text-decoration-color:rgba(0,0,0,0.2); }
+    .tl-title a:hover { text-decoration-color:currentColor; }
+    .tl-desc { font-family:'Inter',system-ui,sans-serif; font-size:0.83rem; color:var(--muted); line-height:1.55; }
+    .tl-desc a { color:var(--primary); text-decoration:none; border-bottom:1px solid rgba(26,46,68,0.25); }
+    .tl-desc a:hover { border-bottom-color:var(--primary); }
+
+    /* ── RECOMMENDATION PILL ── */
+    .rec {
+      display: inline-block;
+      background: #fff8e1;
+      border: 1px solid #ffe082;
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 0.78rem;
+      color: #7a5800;
+      margin-right: 4px;
+    }
+    .rec::before { content: '★ '; }
+
+    /* ── ALERT BOX ── */
+    .alert {
+      border-radius: 8px;
+      padding: 11px 15px;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 0.82rem;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      margin: 0 22px 18px;
+    }
+    .alert-red   { background:#fff5f5; border:1px solid #fecaca; color:#7f1d1d; }
+    .alert-blue  { background:#eff6ff; border:1px solid #bfdbfe; color:#1e3a5f; }
+    .alert-green { background:#f0fdf4; border:1px solid #bbf7d0; color:#14532d; }
+    .alert-amber { background:#fffbeb; border:1px solid #fde68a; color:#78350f; }
+
+    /* ── OVERVIEW ── */
+    .stats { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:36px; }
+    .stat { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:20px 26px; box-shadow:var(--shadow); text-align:center; flex:1; min-width:100px; }
+    .stat .num { font-size:2.1rem; line-height:1; margin-bottom:4px; }
+    .stat .lbl { font-family:'Inter',system-ui,sans-serif; font-size:0.7rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); }
+
+    .ov-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; margin-bottom:32px; }
+    .ov-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:22px; box-shadow:var(--shadow); }
+    .ov-card h3 { font-family:'Inter',system-ui,sans-serif; font-size:0.82rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); margin-bottom:12px; display:flex; align-items:center; gap:7px; }
+    .ov-card p, .ov-card li { font-family:'Inter',system-ui,sans-serif; font-size:0.88rem; line-height:1.75; }
+    .ov-card ul { list-style:none; }
+    .ov-card ul li { display:flex; gap:8px; align-items:baseline; }
+    .ov-card ul li::before { content:'·'; color:var(--muted); }
+    .ov-card a { color:var(--primary); text-decoration:none; border-bottom:1px solid rgba(26,46,68,0.2); font-size:0.82rem; }
+    .ov-card a:hover { border-bottom-color:var(--primary); }
+    .conf { font-family:'Inter',system-ui,sans-serif; font-size:0.8rem; background:var(--bg); border-radius:6px; padding:3px 9px; color:var(--muted); display:inline-block; margin-top:4px; }
+
+    /* ── TIMELINE BLOCK HEADER ── */
+    .block-label {
+      font-family:'Inter',system-ui,sans-serif;
+      font-size:0.68rem; font-weight:700;
+      letter-spacing:0.18em; text-transform:uppercase;
+      color:var(--muted);
+      margin: 28px 0 14px;
+      display:flex; align-items:center; gap:7px;
+    }
+    .block-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+    /* ── TIPS ── */
+    .tips-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; }
+    .tip-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:22px; box-shadow:var(--shadow); }
+    .tip-card h3 { font-family:'Inter',system-ui,sans-serif; font-size:0.82rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:12px; display:flex; align-items:center; gap:7px; }
+    .tip-card ul { list-style:none; }
+    .tip-card li { font-family:'Inter',system-ui,sans-serif; font-size:0.86rem; line-height:1.8; padding-left:14px; position:relative; }
+    .tip-card li::before { content:'✓'; position:absolute; left:0; color:var(--cour); font-size:0.75rem; font-weight:bold; }
+    .tip-card p { font-family:'Inter',system-ui,sans-serif; font-size:0.86rem; color:var(--muted); line-height:1.65; }
+
+    footer { text-align:center; padding:28px 16px; border-top:1px solid var(--border); font-family:'Inter',system-ui,sans-serif; font-size:0.78rem; color:var(--muted); }
+
+    @media(max-width:580px){ .day-tags{display:none;} .section-header{flex-wrap:wrap;} .badge{margin-left:0;} }
+
+    /* ── LIVE SECTION ── */
+    .live-grid { display:grid; gap:16px; }
+    .live-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; }
+    .live-card-hdr { padding:14px 20px; border-bottom:1px solid var(--border); font-family:'Inter',system-ui,sans-serif; font-size:0.78rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .live-card-body { padding:20px; }
+    .refresh-btn { background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:5px 12px; font-family:'Inter',system-ui,sans-serif; font-size:0.78rem; font-weight:600; cursor:pointer; color:var(--text); transition:background 0.15s; }
+    .refresh-btn:hover { background:var(--border); }
+    .loading { color:var(--muted); font-family:'Inter',system-ui,sans-serif; font-size:0.85rem; padding:12px 0; display:flex; align-items:center; gap:8px; }
+    .err { color:#c62828; font-family:'Inter',system-ui,sans-serif; font-size:0.82rem; }
+    /* Countdown */
+    .countdown { display:flex; gap:12px; flex-wrap:wrap; }
+    .cdown-item { flex:1; min-width:80px; background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:14px 10px; text-align:center; }
+    .cdown-num { font-size:2rem; line-height:1; font-weight:normal; }
+    .cdown-lbl { font-family:'Inter',system-ui,sans-serif; font-size:0.68rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); margin-top:2px; }
+    .cdown-msg { font-family:'Inter',system-ui,sans-serif; font-size:0.88rem; color:var(--muted); margin-top:10px; }
+    /* Currency */
+    .fx-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .fx-card { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:16px; text-align:center; }
+    .fx-flag { font-size:1.6rem; margin-bottom:4px; }
+    .fx-rate { font-size:1.5rem; font-weight:normal; }
+    .fx-sub { font-family:'Inter',system-ui,sans-serif; font-size:0.75rem; color:var(--muted); margin-top:2px; }
+    .fx-updated { font-family:'Inter',system-ui,sans-serif; font-size:0.75rem; color:var(--muted); margin-top:12px; }
+    /* Map */
+    #trip-map { height:360px; border-radius:8px; }
+    .map-legend { display:flex; gap:14px; flex-wrap:wrap; margin-top:10px; font-family:'Inter',system-ui,sans-serif; font-size:0.78rem; color:var(--muted); }
+    .legend-item { display:flex; align-items:center; gap:5px; }
+    .legend-line { width:20px; height:3px; border-radius:2px; flex-shrink:0; }
+    /* Weather */
+    .wx-tabs { display:flex; border-bottom:1px solid var(--border); }
+    .wx-tab { flex:1; padding:10px 8px; font-family:'Inter',system-ui,sans-serif; font-size:0.78rem; font-weight:600; background:none; border:none; border-bottom:3px solid transparent; cursor:pointer; color:var(--muted); transition:all 0.2s; text-align:center; display:inline-flex; align-items:center; justify-content:center; gap:5px; }
+    .wx-tab i[class*="iconoir-"] { font-size:0.9rem; }
+    .wx-tab.active { color:var(--text); border-bottom-color:var(--primary); }
+    .wx-tab.cour.active { border-bottom-color:var(--cour); }
+    .wx-tab.zerm.active { border-bottom-color:var(--zerm); }
+    .wx-panel { display:none; padding:16px; }
+    .wx-panel.active { display:block; }
+    .map-panel { display:none; }
+    .map-panel.active { display:block; }
+    .wx-scroll { display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; scrollbar-width:thin; }
+    .wx-day { flex-shrink:0; width:110px; background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:12px 8px; text-align:center; transition:box-shadow 0.15s; }
+    .wx-day:hover { box-shadow:0 2px 12px rgba(0,0,0,0.1); }
+    .wx-day.snow-day { background:#eef5ff; border-color:#bdd7f5; }
+    .wx-day.today { border-color:var(--primary); border-width:2px; }
+    .wx-date-lbl { font-family:'Inter',system-ui,sans-serif; font-size:0.68rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); }
+    .wx-icon { font-size:1.8rem; margin:6px 0; line-height:1; }
+    .wx-desc { font-family:'Inter',system-ui,sans-serif; font-size:0.72rem; color:var(--muted); margin-bottom:6px; line-height:1.3; }
+    .wx-temps { font-family:'Inter',system-ui,sans-serif; font-size:0.8rem; font-weight:600; }
+    .wx-temps .lo { color:var(--muted); font-weight:normal; }
+    .wx-snow { font-family:'Inter',system-ui,sans-serif; font-size:0.72rem; color:#1565c0; margin-top:4px; }
+    .wx-wind { font-family:'Inter',system-ui,sans-serif; font-size:0.7rem; color:var(--muted); margin-top:2px; }
+    .ski-cond { font-family:'Inter',system-ui,sans-serif; font-size:0.68rem; font-weight:700; margin-top:6px; padding:2px 6px; border-radius:99px; display:inline-block; }
+    .wx-note { font-family:'Inter',system-ui,sans-serif; font-size:0.78rem; color:var(--muted); margin-top:12px; padding:8px 12px; background:var(--bg); border-radius:8px; border:1px solid var(--border); }
+    /* Flights */
+    .flight-row { display:flex; align-items:center; gap:12px; padding:14px 0; border-bottom:1px solid var(--border); }
+    .flight-row:last-of-type { border-bottom:none; }
+    .flight-num { font-family:'Inter',system-ui,sans-serif; font-size:1rem; font-weight:700; flex-shrink:0; }
+    .flight-detail { flex:1; font-family:'Inter',system-ui,sans-serif; font-size:0.84rem; }
+    .flight-detail .route { font-weight:600; }
+    .flight-detail .times { color:var(--muted); font-size:0.78rem; margin-top:1px; }
+    .track-btn { background:var(--primary); color:white; text-decoration:none; padding:7px 14px; border-radius:8px; font-family:'Inter',system-ui,sans-serif; font-size:0.78rem; font-weight:700; white-space:nowrap; transition:opacity 0.15s; flex-shrink:0; }
+    .track-btn:hover { opacity:0.85; }
+
+    /* ── PHOTO ALBUM CARD ── */
+    .ph-card { background:linear-gradient(135deg,#1a2e44 0%,#0f1f30 100%); border-radius:var(--radius); overflow:hidden; }
+    .ph-card-hero { position:relative; padding:48px 32px 36px; text-align:center; }
+    .ph-card-hero::before { content:''; position:absolute; inset:0; background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
+    .ph-mountains { margin-bottom:16px; display:flex; justify-content:center; }
+    .ph-card-hero h3 { font-family:'Playfair Display',Georgia,serif; font-size:1.5rem; color:white; margin-bottom:6px; position:relative; }
+    .ph-card-hero p { font-family:'Inter',system-ui,sans-serif; font-size:0.85rem; color:rgba(255,255,255,0.55); position:relative; }
+    .ph-open-btn { display:inline-flex; align-items:center; gap:8px; margin-top:24px; background:white; color:#1a2e44; text-decoration:none; padding:13px 28px; border-radius:50px; font-family:'Inter',system-ui,sans-serif; font-size:0.9rem; font-weight:700; transition:transform 0.18s,box-shadow 0.18s; box-shadow:0 4px 20px rgba(0,0,0,0.3); position:relative; }
+    .ph-open-btn:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(0,0,0,0.4); }
+    .ph-open-btn .btn-icon { font-size:1.1rem; }
+    .ph-card-footer { display:flex; align-items:center; justify-content:center; gap:24px; padding:16px 24px; background:rgba(0,0,0,0.2); flex-wrap:wrap; }
+    .ph-card-footer span { font-family:'Inter',system-ui,sans-serif; font-size:0.78rem; color:rgba(255,255,255,0.4); display:flex; align-items:center; gap:6px; }
+    .ph-card-footer span b { color:rgba(255,255,255,0.7); }
+
+    /* ── INFO TABLES ── */
+    .info-table { width:100%; border-collapse:collapse; }
+    .info-table th { font-family:'Inter',system-ui,sans-serif; font-size:0.68rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); padding:7px 10px; background:var(--bg); border-bottom:2px solid var(--border); text-align:left; }
+    .info-table td { font-family:'Inter',system-ui,sans-serif; font-size:0.83rem; padding:9px 10px; border-bottom:1px solid var(--border); vertical-align:top; line-height:1.5; }
+    .info-table tr:last-child td { border-bottom:none; }
+    .info-table .col-date { font-weight:600; white-space:nowrap; font-size:0.78rem; color:var(--muted); }
+    .info-table .col-status-ok  { color:#2e7d32; font-weight:700; font-size:0.8rem; white-space:nowrap; }
+    .info-table .col-status-pend { color:var(--muted); font-size:0.8rem; white-space:nowrap; }
+
+    /* ── DL STACK (description list rows) ── */
+    .dl-stack { display:flex; flex-direction:column; }
+    .dl-row { display:flex; flex-direction:column; padding:10px 0; border-bottom:1px solid var(--border); gap:2px; }
+    .dl-row:last-child { border-bottom:none; }
+    .dl-row dt { font-family:'Inter',system-ui,sans-serif; font-size:0.78rem; font-weight:700; color:var(--primary); display:flex; align-items:center; gap:8px; }
+    .dl-row dt .dl-meta { font-weight:400; color:var(--muted); font-size:0.72rem; }
+    .dl-row dd { font-family:'Inter',system-ui,sans-serif; font-size:0.85rem; color:var(--text); margin-left:0; line-height:1.55; }
+
+    /* ── STACK LIST (icon + body rows) ── */
+    .stack-list { display:flex; flex-direction:column; }
+    .stack-row { display:flex; align-items:flex-start; gap:11px; padding:10px 0; border-bottom:1px solid var(--border); }
+    .stack-row:last-child { border-bottom:none; }
+    .stack-row-icon { flex-shrink:0; width:22px; display:flex; align-items:center; justify-content:center; color:var(--primary); margin-top:2px; font-size:1rem; }
+    .stack-row-body { flex:1; }
+    .stack-row-title { font-family:'Inter',system-ui,sans-serif; font-size:0.85rem; font-weight:600; color:var(--text); }
+    .stack-row-desc { font-family:'Inter',system-ui,sans-serif; font-size:0.8rem; color:var(--muted); margin-top:2px; line-height:1.5; }
+
+    /* ── SKI MAP CARD ── */
+    .skimap-card { background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; margin-bottom:20px; }
+    .skimap-header { display:flex; align-items:center; gap:9px; padding:13px 18px; border-bottom:1px solid var(--border); font-family:'Inter',system-ui,sans-serif; font-size:0.82rem; font-weight:600; color:var(--primary); background:var(--bg); }
+    .skimap-header i { color:var(--primary); font-size:1rem; }
+    .skimap-label { flex:1; }
+    .skimap-fullscreen { margin-left:auto; font-family:'Inter',system-ui,sans-serif; font-size:0.75rem; font-weight:500; color:var(--primary); text-decoration:none; background:white; border:1px solid var(--border); border-radius:6px; padding:4px 10px; white-space:nowrap; transition:background 0.15s; }
+    .skimap-fullscreen:hover { background:var(--primary); color:white; }
+    .skimap-frame-wrap { position:relative; width:100%; height:420px; background:#e8edf2; }
+    .skimap-frame { width:100%; height:100%; border:none; display:block; }
+    .skimap-fallback { display:none; position:absolute; inset:0; align-items:center; justify-content:center; flex-direction:column; gap:12px; background:#f0f4f8; }
+    .skimap-fallback.show { display:flex; }
+    .skimap-fallback-icon { font-size:2.5rem; color:var(--muted); }
+    .skimap-fallback p { font-family:'Inter',system-ui,sans-serif; font-size:0.83rem; color:var(--muted); text-align:center; }
+    .skimap-fallback a { display:inline-flex; align-items:center; gap:7px; background:var(--primary); color:white; text-decoration:none; padding:10px 22px; border-radius:8px; font-family:'Inter',system-ui,sans-serif; font-size:0.85rem; font-weight:600; }
+    @media (max-width:600px) { .skimap-frame-wrap { height:320px; } }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <h1>Courmayeur &amp; Zermatt</h1>
+  <p class="subtitle">Alps Ski Trip &nbsp;·&nbsp; March – April 2026</p>
+  <div class="pill-row">
+    <span class="pill"><i class="iconoir-airplane"></i> Delta DL 184 &nbsp;·&nbsp; Mar 28 JFK → MXP</span>
+    <span class="pill"><i class="iconoir-map-pin"></i> Courmayeur · Zermatt · Milan</span>
+    <span class="pill"><i class="iconoir-airplane"></i> Delta DL 185 &nbsp;·&nbsp; Apr 6 MXP → JFK</span>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <button class="nav-btn active"       onclick="showTab('overview',this)"><i class="iconoir-compass"></i> Overview</button>
+    <button class="nav-btn cour"         onclick="showTab('courmayeur',this)"><i class="iconoir-snow-flake"></i> Courmayeur</button>
+    <button class="nav-btn zerm"         onclick="showTab('zermatt',this)"><i class="iconoir-snow-flake"></i> Zermatt</button>
+    <button class="nav-btn milan"        onclick="showTab('milan',this)"><i class="iconoir-city"></i> Milan</button>
+    <button class="nav-btn"             onclick="showTab('tips',this)"><i class="iconoir-info-circle"></i> Tips</button>
+    <button class="nav-btn"             onclick="showTab('live',this)" id="live-nav-btn"><i class="iconoir-globe"></i> Live</button>
+    <button class="nav-btn"             onclick="showTab('photos',this)" id="photos-nav-btn"><i class="iconoir-camera"></i> Photos</button>
+  </div>
+</nav>
+
+<main>
+
+<!-- ══════════════════════════════════════════════
+     OVERVIEW
+══════════════════════════════════════════════ -->
+<div id="overview" class="section active">
+  <div class="section-header">
+    <span class="section-icon"><i class="iconoir-compass"></i></span>
+    <div>
+      <h2>Trip Overview</h2>
+      <p class="dates">March 28 – April 6, 2026 &nbsp;·&nbsp; 10 days</p>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="num">10</div><div class="lbl">Days</div></div>
+    <div class="stat"><div class="num">3</div><div class="lbl">Countries</div></div>
+    <div class="stat"><div class="num">1</div><div class="lbl">Vallée Blanche</div></div>
+    <div class="stat"><div class="num">50th</div><div class="lbl">Ben's Birthday</div></div>
+  </div>
+
+  <div class="ov-grid">
+    <div class="ov-card">
+      <h3><i class="iconoir-airplane"></i> Flights</h3>
+      <table class="info-table">
+        <thead><tr><th>Flight</th><th>Route</th><th>Schedule (local times)</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>DL 184</strong><br><span style="font-size:0.75rem;color:var(--muted);">Outbound</span></td>
+            <td>JFK → MXP</td>
+            <td>Mar 28 · 9:55 PM → Mar 29 · 11:49 AM</td>
+          </tr>
+          <tr>
+            <td><strong>DL 185</strong><br><span style="font-size:0.75rem;color:var(--muted);">Return</span></td>
+            <td>MXP → JFK</td>
+            <td>Apr 6 · 2:15 PM → 5:35 PM</td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="font-family:'Inter',system-ui,sans-serif;font-size:0.78rem;color:#c62828;margin-top:10px;display:flex;align-items:center;gap:5px;"><i class="iconoir-warning-triangle"></i> TSA shutdown — aim to be at JFK by <strong>6:00 PM</strong> on Mar 28</p>
+    </div>
+    <div class="ov-card">
+      <h3><i class="iconoir-car"></i> Rental Car</h3>
+      <table class="info-table">
+        <thead><tr><th>Leg</th><th>Route</th><th>Time</th></tr></thead>
+        <tbody>
+          <tr><td class="col-date">Pickup</td><td>MXP Terminal — Budget</td><td>Sun Mar 29</td></tr>
+          <tr><td class="col-date">Drive 1</td><td>MXP → Courmayeur · A26 / A5</td><td>~1h 45min</td></tr>
+          <tr><td class="col-date">Drive 2</td><td>Courmayeur → Täsch · A5/E27</td><td>~2h 45min</td></tr>
+          <tr><td class="col-date">Drive 3</td><td>Täsch → Milan · via A9</td><td>~3h 30min</td></tr>
+          <tr><td class="col-date">Return</td><td>MXP Airport — Budget</td><td>Mon Apr 6</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="ov-card">
+      <h3><i class="iconoir-bed"></i> Hotels</h3>
+      <dl class="dl-stack">
+        <div class="dl-row">
+          <dt>Courmayeur <span class="dl-meta">Mar 29 – Apr 1 · 4 nights</span></dt>
+          <dd>Le Géant, Courmayeur — Apartments by Marriott Bonvoy</dd>
+        </div>
+        <div class="dl-row">
+          <dt>Zermatt <span class="dl-meta">Apr 2 – 4 · 3 nights</span></dt>
+          <dd><a href="https://maps.app.goo.gl/CoJNNEBD456PLgn37" target="_blank">Hotel Alpen Resort &amp; SPA</a></dd>
+        </div>
+        <div class="dl-row">
+          <dt>Milan <span class="dl-meta">Apr 5 · 1 night</span></dt>
+          <dd><a href="https://maps.app.goo.gl/CSVQmX4n1c5XMJpGA" target="_blank">Hotel Indigo Milan – Corso Monforte (IHG)</a></dd>
+        </div>
+      </dl>
+    </div>
+    <div class="ov-card">
+      <h3><i class="iconoir-snow-flake"></i> Skiing</h3>
+      <dl class="dl-stack">
+        <div class="dl-row">
+          <dt>Mar 30 &amp; Apr 1</dt>
+          <dd>Courmayeur Mont Blanc</dd>
+        </div>
+        <div class="dl-row">
+          <dt>Mar 31</dt>
+          <dd>Vallée Blanche — guided off-piste descent from Aiguille du Midi</dd>
+        </div>
+        <div class="dl-row">
+          <dt>Apr 3</dt>
+          <dd>Zermatt Matterhorn · 360km across 3 countries</dd>
+        </div>
+        <div class="dl-row">
+          <dt>Apr 4 AM</dt>
+          <dd>Zermatt Matterhorn + Chez Vrony lunch (11:30 AM)</dd>
+        </div>
+        <div class="dl-row">
+          <dt>Apr 4 PM</dt>
+          <dd>Ben's 50th Birthday — Heinz Julen Loft, MX Zermatt</dd>
+        </div>
+      </dl>
+    </div>
+    <div class="ov-card">
+      <h3><i class="iconoir-calendar"></i> Book Ahead Checklist</h3>
+      <table class="info-table">
+        <thead><tr><th>Date</th><th>Venue / Item</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td class="col-date">Mar 29</td><td>Ristorante Cadran Solaire · 7:30 PM</td><td class="col-status-ok">Confirmed</td></tr>
+          <tr><td class="col-date">Mar 31</td><td>Restaurant Pierre Alexis 1877</td><td class="col-status-ok">Confirmed</td></tr>
+          <tr><td class="col-date">Mar 31</td><td>Vallée Blanche guide — confirm meeting point &amp; time</td><td class="col-status-pend">Confirm</td></tr>
+          <tr><td class="col-date">Apr 1</td><td>Maison Vieille or Alpetta (Wed mountain lunch)</td><td class="col-status-pend">Book</td></tr>
+          <tr><td class="col-date">Apr 2</td><td>Täsch car park — book or confirm capacity</td><td class="col-status-pend">Book</td></tr>
+          <tr><td class="col-date">Apr 2</td><td>Ski hire Zermatt — Bayard Sport (bayardsport.ch)</td><td class="col-status-pend">Book</td></tr>
+          <tr><td class="col-date">Apr 3</td><td>@paradise Restaurant · 12:00 PM</td><td class="col-status-pend">Confirm</td></tr>
+          <tr><td class="col-date">Apr 4</td><td>Chez Vrony · 11:30 AM</td><td class="col-status-pend">Confirm</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="ov-card">
+      <h3><i class="iconoir-calendar"></i> Day-by-Day Snapshot</h3>
+      <table class="info-table">
+        <tbody>
+          <tr><td class="col-date">Mar 28 Sat</td><td>Fly JFK → MXP (overnight)</td></tr>
+          <tr><td class="col-date">Mar 29 Sun</td><td>Arrive MXP · Drive to Courmayeur · Dinner Cadran Solaire</td></tr>
+          <tr><td class="col-date">Mar 30 Mon</td><td>Ski Courmayeur Mont Blanc — Day 1</td></tr>
+          <tr><td class="col-date">Mar 31 Tue</td><td>Vallée Blanche guided descent · Dinner Pierre Alexis</td></tr>
+          <tr><td class="col-date">Apr 1 Wed</td><td>Ski Courmayeur Mont Blanc — Day 2</td></tr>
+          <tr><td class="col-date">Apr 2 Thu</td><td>Drive to Täsch · Train to Zermatt · Gear hire</td></tr>
+          <tr><td class="col-date">Apr 3 Fri</td><td>Ski Zermatt Matterhorn · @paradise lunch</td></tr>
+          <tr><td class="col-date">Apr 4 Sat</td><td>Ski + Chez Vrony · Ben's 50th at Heinz Julen Loft</td></tr>
+          <tr><td class="col-date">Apr 5 Sun</td><td>Drive to Milan · Hotel Indigo</td></tr>
+          <tr><td class="col-date">Apr 6 Mon</td><td>Milan sights · Fly MXP → JFK · Home for dinner</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     COURMAYEUR
+══════════════════════════════════════════════ -->
+<div id="courmayeur" class="section">
+  <div class="section-header">
+    <span class="section-icon"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path fill="#3792CF" d="M64.224,34.453c-0.71-1.739-3.173-1.739-3.883,0l-24.51,60.039h52.903L64.224,34.453z"/><path fill="#6AC9CC" d="M34.616,45.115c-0.584-1.43-2.609-1.43-3.193,0L11.266,94.492h24.565l9.471-23.2L34.616,45.115z"/><circle fill="#FEE36F" cx="50" cy="17.705" r="9.036"/><path fill="#136296" d="M94.494,93.986h-5.42L64.692,34.262c-0.408-0.999-1.331-1.619-2.41-1.619c-1.078,0-2.002,0.62-2.409,1.619L45.302,69.954L35.084,44.924c-0.349-0.856-1.14-1.387-2.065-1.387s-1.715,0.531-2.065,1.387L10.926,93.986h-5.42C5.226,93.986,5,94.213,5,94.492s0.226,0.506,0.506,0.506h88.988c0.279,0,0.506-0.226,0.506-0.506S94.774,93.986,94.494,93.986z"/></svg></span>
+    <div>
+      <h2>Courmayeur</h2>
+      <p class="dates">March 28 – April 1 &nbsp;·&nbsp; 4 ski days</p>
+    </div>
+    <span class="badge badge-cour">Valle d'Aosta</span>
+  </div>
+
+  <!-- DAY 1 -->
+  <div class="block-label"><i class="iconoir-airplane"></i> Departure &nbsp;· &nbsp;Day 1</div>
+  <div class="day-card">
+    <div class="day-header" onclick="toggleDay(this)">
+      <div class="day-num">1</div>
+      <div class="day-title">
+        <strong>Fly JFK → Milan Malpensa</strong>
+        <div class="day-date">Saturday, March 28</div>
+      </div>
+      <div class="day-tags"><span class="tag"><i class="iconoir-airplane"></i> Delta DL 184</span><span class="tag"><i class="iconoir-warning-triangle"></i> TSA shutdown</span></div>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="day-body">
+      <div class="alert alert-red" style="margin:18px 22px 0;">
+        <i class="iconoir-warning-triangle"></i> <strong>TSA Shutdown:</strong> Aim to be at JFK by <strong>6:00 PM</strong> — well ahead of the 9:55 PM departure.
+      </div>
+      <div class="timeline" style="margin-top:6px;">
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-home-simple"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">Afternoon</div>
+            <div class="tl-title">Leave for JFK</div>
+            <div class="tl-desc">Target departure from home: ~5:00–5:30 PM to be at JFK by 6:00 PM. Allow extra time for TSA delays.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-airplane"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">6:00 PM — Check-in</div>
+            <div class="tl-title">JFK Airport · Delta Terminal 4</div>
+            <div class="tl-desc">Check in bags, clear security, and get settled. Grab dinner at the airport — it's a long flight.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-airplane"></i></div></div>
+          <div class="tl-content">
+            <div class="tl-time">9:55 PM — Departure</div>
+            <div class="tl-title">Delta DL 184 · JFK → MXP</div>
+            <div class="tl-desc">Flight time: ~8 hours. Arrives Milan Malpensa (MXP) Sunday March 29 at <strong>11:49 AM</strong>. Try to sleep!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DAY 2 -->
+  <div class="block-label"><i class="iconoir-airplane"></i> Arrival &nbsp;·&nbsp; Day 2</div>
+  <div class="day-card cour-card open">
+    <div class="day-header" onclick="toggleDay(this)">
+      <div class="day-num">2</div>
+      <div class="day-title">
+        <strong>Arrive MXP &rarr; Courmayeur</strong>
+        <div class="day-date">Sunday, March 29</div>
+      </div>
+      <div class="day-tags"><span class="tag"><i class="iconoir-car"></i> Drive</span><span class="tag"><i class="iconoir-snow-flake"></i> Gear rental</span><span class="tag"><i class="iconoir-cutlery"></i> Cadran Solaire</span></div>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="day-body">
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-airplane"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">11:49 AM — Arrive</div>
+            <div class="tl-title">Milan Malpensa Airport (MXP)</div>
+            <div class="tl-desc">Clear customs and immigration. Head to <strong>Budget Car Rental</strong> in the terminal to pick up your vehicle.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-car"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">~12:30 PM — Drive</div>
+            <div class="tl-title">MXP → Courmayeur &nbsp;·&nbsp; ~1h 45min</div>
+            <div class="tl-desc">Take the A26 → A5 motorway toward Aosta and Courmayeur. Spectacular mountain scenery as you approach. You'll pass through the Mont Blanc tunnel area.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-bed"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">~2:30 PM — Check-in</div>
+            <div class="tl-title">Le Géant, Courmayeur — Apartments by Marriott Bonvoy</div>
+            <div class="tl-desc">Drop bags and get settled. Standard check-in time 3:00 PM — call ahead if you want to request early access to your room.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-snow-flake"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">Afternoon</div>
+            <div class="tl-title">Ski Gear Rental</div>
+            <div class="tl-desc">Rent skis, boots, poles, and — critically — full <strong>avalanche safety equipment</strong> (beacon/transceiver, probe, shovel) for Tuesday's Vallée Blanche. Several rental shops are in town and at the Courmayeur ski area base. Confirm your beacon is working and that everyone in the group knows how to use it.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-cutlery"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">~5:00 PM</div>
+            <div class="tl-title">Rest &amp; freshen up</div>
+            <div class="tl-desc">You've been traveling for ~18+ hours. Take a nap, shower, and get ready for dinner. You've earned it.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-cutlery"></i></div></div>
+          <div class="tl-content">
+            <div class="tl-time">7:30 PM — Dinner (Reserved)</div>
+            <div class="tl-title"><a href="https://maps.app.goo.gl/T2rawscbLPeXKRiZ9" target="_blank">Ristorante Cadran Solaire</a></div>
+            <div class="tl-desc">Reservation confirmed at 7:30 PM. Classic Valle d'Aosta cuisine — a perfect welcome dinner after the journey.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DAY 3 -->
+  <div class="block-label"><i class="iconoir-snow-flake"></i> Ski Day 1 &nbsp;·&nbsp; Day 3</div>
+  <div class="day-card cour-card">
+    <div class="day-header" onclick="toggleDay(this)">
+      <div class="day-num">3</div>
+      <div class="day-title">
+        <strong>Ski Courmayeur Mont Blanc</strong>
+        <div class="day-date">Monday, March 30</div>
+      </div>
+      <div class="day-tags"><span class="tag"><i class="iconoir-snow-flake"></i> Full ski day</span><span class="tag"><i class="iconoir-cutlery"></i> La Chaumière / Chiecco</span><span class="tag"><i class="iconoir-cutlery"></i> Après</span></div>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="day-body">
+      <div class="alert alert-green">
+        <i class="iconoir-snow-flake"></i> <strong><a href="https://www.courmayeur-montblanc.com/en/" target="_blank">Courmayeur Mont Blanc</a></strong> — lifts typically open 8:30 AM. First tracks on a Monday = fewer crowds.
+      </div>
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-sun-light"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">Early Morning</div>
+            <div class="tl-title">Breakfast &amp; kit up</div>
+            <div class="tl-desc">Grab a quick espresso and cornetto at a local bar. Get your avalanche gear fitted and tested — even if you're not doing the VB until Tuesday, it's good to get comfortable with the beacon today.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-map-pin"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">8:30 AM — Lifts open</div>
+            <div class="tl-title">First runs on Courmayeur</div>
+            <div class="tl-desc">Take the Courmayeur gondola or Dolonne cable car up to Plan Checrouit. Explore the groomed runs in the morning while the snow is best. The resort covers 100km of pistes with incredible Mont Blanc views.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-cutlery"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">~12:00 PM — Mountain Lunch</div>
+            <div class="tl-title">La Chaumière or Chiecco</div>
+            <div class="tl-desc">Both are popular on-mountain restaurants at Plan Checrouit. <strong>La Chaumière</strong> is beloved for its sun terrace and hearty Valle d'Aosta dishes; <strong>Chiecco</strong> is lively and great for a long sunny lunch. Aim to arrive by noon before the rush — or book ahead if possible.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-snow-flake"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">Afternoon</div>
+            <div class="tl-title">Continue skiing</div>
+            <div class="tl-desc">Explore different sectors — the Val Veny side offers beautiful off-piste options if you're feeling adventurous (warm-up for Tuesday). Lifts typically close 4:30–5:00 PM.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-cutlery"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">~5:00 PM — Après</div>
+            <div class="tl-title">Après Ski &nbsp;<span class="rec">Bar Roma</span>&nbsp;<span class="rec">Le Privé</span></div>
+            <div class="tl-desc">
+              <strong>Bar Roma</strong> — Stone-walled classic right in the village center. Comes alive around 5 PM with a complimentary canapés spread. Order a <em>Bombardino</em> (the Italian ski après classic: egg liqueur + brandy + whipped cream).<br><br>
+              <strong>Le Privé</strong> — Superb handcrafted cocktails and delicious tapas. Warm, friendly atmosphere and a bit more sophisticated.
+            </div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-cutlery"></i></div></div>
+          <div class="tl-content">
+            <div class="tl-time">~7:30 PM — Dinner</div>
+            <div class="tl-title">Simple dinner &nbsp;<span class="rec">du Tunnel</span>&nbsp;<span class="rec">La Terrazza</span></div>
+            <div class="tl-desc">
+              <strong>Pizzeria Ristorante du Tunnel</strong> — Oldest pizzeria in Courmayeur, wood-oven pies and classic mountain dishes. Chalet-style with an al fresco terrace. Very popular — book ahead.<br><br>
+              <strong>Ristorante La Terrazza</strong> — Central village location, excellent regional Italian cuisine in a homey, relaxed setting. Perfect for tired skiers.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DAY 4 -->
+  <div class="block-label"><i class="iconoir-pine-tree"></i> Vallée Blanche &nbsp;·&nbsp; Day 4</div>
+  <div class="day-card cour-card">
+    <div class="day-header" onclick="toggleDay(this)">
+      <div class="day-num">4</div>
+      <div class="day-title">
+        <strong>Vallée Blanche — Off-Piste Descent</strong>
+        <div class="day-date">Tuesday, March 31</div>
+      </div>
+      <div class="day-tags"><span class="tag"><i class="iconoir-pine-tree"></i> Guided descent</span><span class="tag"><i class="iconoir-map-pin"></i> Chamonix</span><span class="tag"><i class="iconoir-cutlery"></i> Pierre Alexis 1877</span></div>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="day-body">
+      <div class="alert alert-red">
+        <i class="iconoir-warning-triangle"></i> <strong>Avalanche Safety:</strong> Bring your full ABCs — Avalanche beacon, Probe, Shovel. Your guide will brief you on safety protocols. Listen carefully.
+      </div>
+      <div class="alert alert-blue">
+        <i class="iconoir-info-circle"></i> Booking via <a href="https://www.explore-share.com/trip/vallee-blanche-guided-freeride-skiing-weekend/?step=0" target="_blank">explore-share.com</a> — confirm guide meeting point and time in advance.
+      </div>
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-calendar"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">Very Early Morning</div>
+            <div class="tl-title">Meet your guide</div>
+            <div class="tl-desc">Guides typically start early — confirm the exact meeting time and location. Dress warmly in layers; the Vallée Blanche starts at ~3,800m and can be bitterly cold at the top even in spring.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-map-pin"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">Morning</div>
+            <div class="tl-title">Aiguille du Midi — Top of the descent</div>
+            <div class="tl-desc">Take the Aiguille du Midi cable car to 3,842m. The famous arête (ridge walk) with crampons gets you to the start of the descent. Breathtaking views of the Mont Blanc massif.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-snow-flake"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">Morning → Midday</div>
+            <div class="tl-title">The Vallée Blanche descent (~24km)</div>
+            <div class="tl-desc">The classic route descends through the glacial Vallée Blanche, weaving between crevasse fields and seracs with your guide. Allow 3–5 hours for the full descent depending on conditions and group pace. The scenery is unlike anything else in the Alps.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-map-pin"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">Midday / Early Afternoon</div>
+            <div class="tl-title">Arrive in Chamonix</div>
+            <div class="tl-desc">The descent ends at the Mer de Glace station in Chamonix. Grab lunch in town — you'll have earned it. Chamonix has great mountain restaurants and cafés along the main street.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-car"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">Afternoon</div>
+            <div class="tl-title">Uber back to Courmayeur</div>
+            <div class="tl-desc">~30–40 minutes via the Mont Blanc Tunnel (toll). Relax and let the day sink in. Return to the hotel, shower, and rest before dinner.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-cutlery"></i></div></div>
+          <div class="tl-content">
+            <div class="tl-time">Evening — Dinner (Reserved)</div>
+            <div class="tl-title"><a href="https://maps.app.goo.gl/6CnrtHgJa6ZQc2m86" target="_blank">Restaurant Pierre Alexis 1877</a></div>
+            <div class="tl-desc">Reservation confirmed. One of Courmayeur's most celebrated restaurants, set in a historic 19th-century building. A fitting celebration dinner after a legendary day on the mountain.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DAY 5 -->
+  <div class="block-label"><i class="iconoir-snow-flake"></i> Ski Day 2 &nbsp;·&nbsp; Day 5</div>
+  <div class="day-card cour-card">
+    <div class="day-header" onclick="toggleDay(this)">
+      <div class="day-num">5</div>
+      <div class="day-title">
+        <strong>Ski Courmayeur Mont Blanc</strong>
+        <div class="day-date">Wednesday, April 1</div>
+      </div>
+      <div class="day-tags"><span class="tag"><i class="iconoir-snow-flake"></i> Full ski day</span><span class="tag"><i class="iconoir-cutlery"></i> Alpetta / Maison Vieille</span><span class="tag"><i class="iconoir-cutlery"></i> Après</span></div>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="day-body">
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-sun-light"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">Morning</div>
+            <div class="tl-title">Full day on the mountain</div>
+            <div class="tl-desc">You know the mountain now — explore different runs and sectors. The Val Veny area offers great varied terrain. Explore above Plan Checrouit for Mont Blanc panoramas.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-cutlery"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">~12:00 PM — Mountain Lunch</div>
+            <div class="tl-title">Mix it up &nbsp;<span class="rec">Alpetta</span>&nbsp;<span class="rec">Maison Vieille</span></div>
+            <div class="tl-desc">
+              <strong>Alpetta Mountain Restaurant</strong> — Wholesome, locally sourced cooking with friendly English-speaking service. Gourmet burgers, mountain fare. A low-key gem between Chiecco and Chateau Branlant. Call +39 349 3991363.<br><br>
+              <strong>Maison Vieille</strong> (1,956m) — One of the most spectacular lunch spots in the Alps, on a sunny plateau above Plan Checrouit via a slow double chair. Exceptional food and wine. <em>Book ahead — very popular.</em>
+            </div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-snow-flake"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">Afternoon</div>
+            <div class="tl-title">Last ski runs in Courmayeur</div>
+            <div class="tl-desc">Make the most of the final day here — soak in the Mont Blanc views. Pack up skis by 4:30 PM so you have time to prepare for the drive tomorrow.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-cutlery"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">~5:00 PM — Après</div>
+            <div class="tl-title">Après Ski &nbsp;<span class="rec">Bar Roma</span>&nbsp;<span class="rec">Le Privé</span></div>
+            <div class="tl-desc">Return to Bar Roma for another Bombardino, or try Le Privé for a last handcrafted cocktail. Also worth trying: <strong>Le Dahu</strong>, which has an outdoor courtyard with sheepskin blankets — cozy on a spring evening.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-cutlery"></i></div></div>
+          <div class="tl-content">
+            <div class="tl-time">~7:30 PM — Dinner</div>
+            <div class="tl-title">Simple dinner &nbsp;<span class="rec">du Tunnel</span>&nbsp;<span class="rec">La Terrazza</span></div>
+            <div class="tl-desc">Return to a favourite from Monday, or explore a new spot. Valle d'Aosta specialties to look for: <em>fonduta</em> (fondue), <em>polenta taragna</em>, and local Fontina cheese dishes. Early dinner is smart — you have a drive tomorrow morning.</div>
+          </div>
+        </div>
+      </div>
+      <div class="alert alert-amber" style="margin-bottom:18px;">
+        <i class="iconoir-info-circle"></i> Tonight: Pack up your gear bags and double-check ski equipment to be returned in the morning.
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     ZERMATT
+══════════════════════════════════════════════ -->
+<div id="zermatt" class="section">
+  <div class="section-header">
+    <span class="section-icon"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path fill="#3792CF" d="M64.224,34.453c-0.71-1.739-3.173-1.739-3.883,0l-24.51,60.039h52.903L64.224,34.453z"/><path fill="#6AC9CC" d="M34.616,45.115c-0.584-1.43-2.609-1.43-3.193,0L11.266,94.492h24.565l9.471-23.2L34.616,45.115z"/><circle fill="#FEE36F" cx="50" cy="17.705" r="9.036"/><path fill="#136296" d="M94.494,93.986h-5.42L64.692,34.262c-0.408-0.999-1.331-1.619-2.41-1.619c-1.078,0-2.002,0.62-2.409,1.619L45.302,69.954L35.084,44.924c-0.349-0.856-1.14-1.387-2.065-1.387s-1.715,0.531-2.065,1.387L10.926,93.986h-5.42C5.226,93.986,5,94.213,5,94.492s0.226,0.506,0.506,0.506h88.988c0.279,0,0.506-0.226,0.506-0.506S94.774,93.986,94.494,93.986z"/></svg></span>
+    <div>
+      <h2>Zermatt</h2>
+      <p class="dates">April 2 – 4 &nbsp;·&nbsp; 3 nights &nbsp;·&nbsp; Matterhorn country</p>
+    </div>
+    <span class="badge badge-zerm">Wallis · Valais</span>
+  </div>
+
+  <!-- DAY 6 -->
+  <div class="block-label"><i class="iconoir-car"></i> Travel Day &nbsp;·&nbsp; Day 6</div>
+  <div class="day-card zerm-card open">
+    <div class="day-header" onclick="toggleDay(this)">
+      <div class="day-num">6</div>
+      <div class="day-title">
+        <strong>Courmayeur → Zermatt</strong>
+        <div class="day-date">Thursday, April 2</div>
+      </div>
+      <div class="day-tags"><span class="tag"><i class="iconoir-car"></i> Drive to Täsch</span><span class="tag"><i class="iconoir-train"></i> Train to Zermatt</span><span class="tag"><i class="iconoir-snow-flake"></i> Gear hire</span></div>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="day-body">
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-calendar"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">Early Morning</div>
+            <div class="tl-title">Return ski gear &amp; check out</div>
+            <div class="tl-desc">Return rental skis and avalanche equipment before checking out of Le Géant. Load up the car and aim to be on the road by 8–9 AM.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-car"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">~9:00 AM — Drive</div>
+            <div class="tl-title">Courmayeur → Matterhorn Terminal Täsch &nbsp;·&nbsp; ~2h 45min</div>
+            <div class="tl-desc">Route: A5 → Great St. Bernard Tunnel (toll) → Martigny → Sion → Visp → Täsch. Beautiful drive through the Swiss Rhône Valley with snow-capped peaks all around. Park at <strong>Matterhorn Terminal Täsch</strong> (paid car park — book ahead at matterhornparadise.ch or pay on arrival).</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-train"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">~12:00 PM</div>
+            <div class="tl-title">Shuttle train: Täsch → Zermatt &nbsp;·&nbsp; 12 minutes</div>
+            <div class="tl-desc">Zermatt is car-free — the shuttle train runs every 20 minutes. Trains run from ~6 AM to midnight. Fare is CHF ~10 each way (buy at station or via SBB app).</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-bed"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">~12:30 PM — Check-in</div>
+            <div class="tl-title"><a href="https://maps.app.goo.gl/CoJNNEBD456PLgn37" target="_blank">Hotel Alpen Resort &amp; SPA</a></div>
+            <div class="tl-desc">A well-appointed hotel with multiple restaurants on site — <strong>Peakfine</strong> (creative modern cuisine) and <strong>Ribis &amp; Stibis</strong> (cosy Alpine fondue and mountain fare). Great for at least one dinner in house. Breakfast buffet 7–11 AM daily.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-snow-flake"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">Afternoon</div>
+            <div class="tl-title">Ski gear hire &nbsp;<span class="rec">Bayard Sport</span>&nbsp;<span class="rec">Matterhorn Sport</span></div>
+            <div class="tl-desc">
+              <strong>Bayard Sport</strong> — Multiple locations including right next to the Sunnegga Express lift. Well-established, excellent range. Book online for a discount at bayardsport.ch.<br><br>
+              <strong>Matterhorn Sport</strong> — On the main road between the train station and Furi gondola, and a central village location. Good value and convenient.
+            </div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-cutlery"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">~5:00 PM — Après</div>
+            <div class="tl-title">First Zermatt après &nbsp;<span class="rec">Hennu Stall</span>&nbsp;<span class="rec">The Broken Bar</span></div>
+            <div class="tl-desc">
+              <strong>Hennu Stall</strong> — Family-run charmer in the Furi hamlet at the base of the Furi-Zermatt slope. Often called the best après in Zermatt. Authentic, dynamic, traditional wood-and-slate chalet vibes.<br><br>
+              <strong>The Broken Bar</strong> (Hotel Post) — A legendary cellar bar with 50+ years of après history. Iconic Zermatt institution.
+            </div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-cutlery"></i></div></div>
+          <div class="tl-content">
+            <div class="tl-time">Evening — Dinner</div>
+            <div class="tl-title">Hotel Alpen Resort &amp; SPA restaurants</div>
+            <div class="tl-desc">
+              Tonight's a good night to stay in and try the hotel. <strong>Ribis &amp; Stibis</strong> offers Alpine cosiness with traditional fondues and gourmet burgers — perfect after a travel day. Or <strong>Peakfine</strong> for creative cuisine if you're feeling more upscale.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DAY 7 -->
+  <div class="block-label"><i class="iconoir-snow-flake"></i> Ski Day 3 &nbsp;·&nbsp; Day 7</div>
+  <div class="day-card zerm-card">
+    <div class="day-header" onclick="toggleDay(this)">
+      <div class="day-num">7</div>
+      <div class="day-title">
+        <strong>Ski Zermatt Matterhorn</strong>
+        <div class="day-date">Friday, April 3</div>
+      </div>
+      <div class="day-tags"><span class="tag"><i class="iconoir-snow-flake"></i> Full ski day</span><span class="tag"><i class="iconoir-cutlery"></i> @paradise 12pm</span><span class="tag"><i class="iconoir-cutlery"></i> Elsie's</span></div>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="day-body">
+      <div class="alert alert-blue">
+        <i class="iconoir-snow-flake"></i> <a href="https://www.matterhornparadise.ch/en/experience/skiing" target="_blank">Zermatt Matterhorn</a> — 360km of pistes across 3 countries (Switzerland, Italy, France). Consider a Cervinia day if conditions are good.
+      </div>
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-sun-light"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">Early Morning</div>
+            <div class="tl-title">First cable car — get the best snow</div>
+            <div class="tl-desc">Head to Matterhorn Glacier Paradise (Klein Matterhorn, 3,883m) for the highest terrain. Morning light on the Matterhorn from up here is extraordinary. Lifts open ~8:30 AM.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-cutlery"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">12:00 PM — Lunch (Reserved)</div>
+            <div class="tl-title">@paradise Restaurant — 3,883m</div>
+            <div class="tl-desc">The highest restaurant in the Alps, at the top of the Matterhorn Glacier Paradise cable car. Reservation at <strong>12:00 PM</strong>. Confirm directly with the restaurant. The views are simply unmatched — you're standing above almost everything.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-snow-flake"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">Afternoon</div>
+            <div class="tl-title">Explore the Matterhorn ski area</div>
+            <div class="tl-desc">Work your way down through Trockener Steg and the Furi area. The Sunnegga sector offers great tree skiing and some of the most iconic Matterhorn views on the mountain.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-cutlery"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">~5:00 PM — Après / Wind-down</div>
+            <div class="tl-title">Elsie's Wine &amp; Champagne Bar &nbsp;<span class="rec">Elsie's Bar</span></div>
+            <div class="tl-desc"><strong>Elsie's Bar</strong> on Kirchplatz — a Zermatt institution. Legendary wine and champagne selection, first-class food (oysters, Swiss delicacies), golden-twenties ambience. Refined and intimate — perfect for a Friday evening wind-down.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-cutlery"></i></div></div>
+          <div class="tl-content">
+            <div class="tl-time">Evening — Dinner</div>
+            <div class="tl-title">North Wall Bar &amp; Restaurant</div>
+            <div class="tl-desc">A Zermatt favourite for its relaxed, convivial atmosphere. Good food, cold beer, great vibes — exactly what Friday night calls for.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DAY 8 -->
+  <div class="block-label"><i class="iconoir-star"></i> Ben's 50th &nbsp;·&nbsp; Day 8</div>
+  <div class="day-card zerm-card">
+    <div class="day-header" onclick="toggleDay(this)">
+      <div class="day-num">8</div>
+      <div class="day-title">
+        <strong>Ski + Ben's 50th Birthday</strong>
+        <div class="day-date">Saturday, April 4</div>
+      </div>
+      <div class="day-tags"><span class="tag"><i class="iconoir-snow-flake"></i> Morning ski</span><span class="tag"><i class="iconoir-cutlery"></i> Chez Vrony 11:30am</span><span class="tag"><i class="iconoir-star"></i> MX Zermatt</span></div>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="day-body">
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-sun-light"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">Morning</div>
+            <div class="tl-title">Morning ski runs</div>
+            <div class="tl-desc">Get out early and make the most of the last ski morning. Head to Sunnegga sector — easy access for getting back down to Chez Vrony for lunch. Aim to finish your last run by 11:15 AM.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-cutlery"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">11:30 AM — Lunch (Reserved)</div>
+            <div class="tl-title">Chez Vrony</div>
+            <div class="tl-desc">One of the most beloved mountain restaurants in Zermatt, perched on the Sunnegga slopes with jaw-dropping Matterhorn views. Known for exceptional Swiss cuisine and a warm, rustic atmosphere. The perfect send-off lunch. Reservation at <strong>11:30 AM</strong>.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-snow-flake"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">Afternoon</div>
+            <div class="tl-title">Last ski runs of the trip</div>
+            <div class="tl-desc">After lunch, take a few final runs before skiing down and returning your hire gear. Then head back to the hotel to get ready for the evening.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-home-simple"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">~4:00 PM</div>
+            <div class="tl-title">Return ski gear &amp; get ready</div>
+            <div class="tl-desc">Return hire equipment. Take full advantage of the hotel spa — you've earned a long soak. Get dressed up for the evening.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-star"></i></div></div>
+          <div class="tl-content">
+            <div class="tl-time">Evening — Ben's 50th Birthday</div>
+            <div class="tl-title"><a href="https://www.mxzermatt.com/zermatt-chalets/heinz-julen-loft/" target="_blank">Heinz Julen Loft — MX Zermatt</a></div>
+            <div class="tl-desc">One of Zermatt's most extraordinary private spaces — a spectacular architect-designed loft by the legendary Heinz Julen, with incredible Matterhorn views. A night to remember.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     MILAN
+══════════════════════════════════════════════ -->
+<div id="milan" class="section">
+  <div class="section-header">
+    <span class="section-icon"><i class="iconoir-city"></i></span>
+    <div>
+      <h2>Milan</h2>
+      <p class="dates">April 5 – 6 &nbsp;·&nbsp; Drive in, fly out</p>
+    </div>
+    <span class="badge badge-milan">Lombardia</span>
+  </div>
+
+  <!-- DAY 9 -->
+  <div class="block-label"><i class="iconoir-car"></i> Travel Day &nbsp;·&nbsp; Day 9</div>
+  <div class="day-card milan-card open">
+    <div class="day-header" onclick="toggleDay(this)">
+      <div class="day-num">9</div>
+      <div class="day-title">
+        <strong>Zermatt → Milan</strong>
+        <div class="day-date">Sunday, April 5</div>
+      </div>
+      <div class="day-tags"><span class="tag"><i class="iconoir-snow-flake"></i> Last runs?</span><span class="tag"><i class="iconoir-car"></i> ~3h 30min drive</span><span class="tag"><i class="iconoir-city"></i> Milan evening</span></div>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="day-body">
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-bed"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">Morning</div>
+            <div class="tl-title">Sleep in &amp; optional ski runs</div>
+            <div class="tl-desc">After Ben's 50th, take it easy this morning. If you're feeling fresh, squeeze in a final few runs before 10 AM — then ski gear back and check out. Or enjoy breakfast at the hotel and soak up the last Matterhorn views.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-train"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">~10:30–11:00 AM</div>
+            <div class="tl-title">Train: Zermatt → Täsch &nbsp;·&nbsp; 12 min</div>
+            <div class="tl-desc">Collect your car from Matterhorn Terminal Täsch. Load up and head toward Milan.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-car"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">~11:30 AM — Drive</div>
+            <div class="tl-title">Täsch → Milan &nbsp;·&nbsp; ~3h 30min</div>
+            <div class="tl-desc">Route via Visp → Simplon Pass (if open) or via Brig → Domodossola → A26 → Milan. The Simplon route is spectacular through the Swiss-Italian Alps. Arrive Milan early afternoon.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-bed"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">~3:00 PM — Check-in</div>
+            <div class="tl-title"><a href="https://maps.app.goo.gl/CSVQmX4n1c5XMJpGA" target="_blank">Hotel Indigo Milan – Corso Monforte (IHG)</a></div>
+            <div class="tl-desc">Boutique IHG hotel in the upscale Porta Venezia/Monforte district — great for exploring the Brera and Porta Nuova areas on foot. Drop the car or find nearby parking — Milan city driving can be tricky.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-map-pin"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">Afternoon</div>
+            <div class="tl-title">Explore Milan</div>
+            <div class="tl-desc">The hotel is well-placed for a stroll. <strong>Brera district</strong> (30 min walk) is charming with galleries, boutiques and aperitivo bars. Or take the metro to the <strong>Duomo</strong> area for a quick look at Milan's iconic cathedral and the stunning <strong>Galleria Vittorio Emanuele II</strong>.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-cutlery"></i></div></div>
+          <div class="tl-content">
+            <div class="tl-time">Evening — Dinner (TBD)</div>
+            <div class="tl-title">A nice dinner in Milan &nbsp;<span class="rec">Trattoria del Nuovo Macello</span>&nbsp;<span class="rec">Navigli area</span></div>
+            <div class="tl-desc">
+              <strong>Trattoria del Nuovo Macello</strong> — Classic Milanese trattoria, beloved by locals. Old-school risotto alla Milanese and ossobuco. Book ahead.<br><br>
+              <strong>Navigli district</strong> — The canal area (~20 min by taxi) has dozens of great restaurants for a relaxed final evening, from pizza to modern Italian. Great atmosphere on a Sunday night.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DAY 10 -->
+  <div class="block-label"><i class="iconoir-airplane"></i> Departure Day &nbsp;·&nbsp; Day 10</div>
+  <div class="day-card milan-card">
+    <div class="day-header" onclick="toggleDay(this)">
+      <div class="day-num">10</div>
+      <div class="day-title">
+        <strong>Milan → JFK &nbsp;·&nbsp; Fly Home</strong>
+        <div class="day-date">Monday, April 6</div>
+      </div>
+      <div class="day-tags"><span class="tag"><i class="iconoir-coffee-cup"></i> Breakfast</span><span class="tag"><i class="iconoir-building"></i> Sights</span><span class="tag"><i class="iconoir-airplane"></i> DL 185 at 2:15pm</span></div>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="day-body">
+      <div class="alert alert-red">
+        <i class="iconoir-airplane"></i> <strong>Flight DL 185 departs MXP at 2:15 PM.</strong> Aim to be at the airport by <strong>12:00 PM</strong> (noon). Return the rental car before check-in.
+      </div>
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-coffee-cup"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">Morning</div>
+            <div class="tl-title">Breakfast somewhere special &nbsp;<span class="rec">Pasticceria Marchesi</span></div>
+            <div class="tl-desc"><strong>Pasticceria Marchesi</strong> (Via Monte Napoleone) — Milan's most elegant historic pastry shop, dating to 1824. Impeccable croissants, pastries, and coffee. A perfect final Italian morning.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-building"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">~9:30 AM</div>
+            <div class="tl-title">Quick Milan sights</div>
+            <div class="tl-desc">If time allows: <strong>Piazza del Duomo</strong> and <strong>Galleria Vittorio Emanuele II</strong> are 5 minutes apart and always worth a look. The hotel is well-placed for a quick loop before heading to the airport.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-car"></i></div><div class="tl-line"></div></div>
+          <div class="tl-content">
+            <div class="tl-time">~10:30 AM — Leave for airport</div>
+            <div class="tl-title">Drive to MXP &nbsp;·&nbsp; ~45min from central Milan</div>
+            <div class="tl-desc">Return rental car at MXP Budget location. Allow extra time for car return and check-in. MXP terminal is straightforward once you're in.</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-icon"><i class="iconoir-airplane"></i></div></div>
+          <div class="tl-content">
+            <div class="tl-time">2:15 PM — Departure</div>
+            <div class="tl-title">Delta DL 185 · MXP → JFK</div>
+            <div class="tl-desc">Arrives JFK at <strong>5:35 PM</strong>. A civilised end to a great trip — you'll be home for dinner!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     TIPS
+══════════════════════════════════════════════ -->
+<div id="tips" class="section">
+  <div class="section-header">
+    <span class="section-icon"><i class="iconoir-info-circle"></i></span>
+    <div>
+      <h2>Tips &amp; Notes</h2>
+      <p class="dates">Practical advice for the trip</p>
+    </div>
+  </div>
+
+  <div class="tips-grid">
+    <div class="tip-card">
+      <h3><i class="iconoir-calendar"></i> Book Ahead — Critical</h3>
+      <table class="info-table">
+        <thead><tr><th>Date</th><th>Venue / Item</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td class="col-date">Mar 29</td><td>Ristorante Cadran Solaire · 7:30 PM</td><td class="col-status-ok">Confirmed</td></tr>
+          <tr><td class="col-date">Mar 31</td><td>Restaurant Pierre Alexis 1877</td><td class="col-status-ok">Confirmed</td></tr>
+          <tr><td class="col-date">Mar 31</td><td>Vallée Blanche guide — meeting point &amp; time</td><td class="col-status-pend">Confirm</td></tr>
+          <tr><td class="col-date">Apr 1</td><td>Maison Vieille / Alpetta (Wed lunch)</td><td class="col-status-pend">Book</td></tr>
+          <tr><td class="col-date">Apr 2</td><td>Täsch car park</td><td class="col-status-pend">Book</td></tr>
+          <tr><td class="col-date">Apr 2</td><td>Ski hire Zermatt — bayardsport.ch</td><td class="col-status-pend">Book</td></tr>
+          <tr><td class="col-date">Apr 3</td><td>@paradise Restaurant · 12:00 PM</td><td class="col-status-pend">Confirm</td></tr>
+          <tr><td class="col-date">Apr 4</td><td>Chez Vrony · 11:30 AM</td><td class="col-status-pend">Confirm</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tip-card">
+      <h3><i class="iconoir-pine-tree"></i> Vallée Blanche Prep</h3>
+      <div class="stack-list">
+        <div class="stack-row">
+          <div class="stack-row-icon"><i class="iconoir-warning-triangle"></i></div>
+          <div class="stack-row-body"><div class="stack-row-title">ABCs — Avalanche Beacon, Probe, Shovel</div><div class="stack-row-desc">Must-have. Practice your beacon search before Tuesday.</div></div>
+        </div>
+        <div class="stack-row">
+          <div class="stack-row-icon"><i class="iconoir-snow-flake"></i></div>
+          <div class="stack-row-body"><div class="stack-row-title">Dress in warm layers</div><div class="stack-row-desc">The descent starts at 3,800m — bitterly cold at the top even in spring.</div></div>
+        </div>
+        <div class="stack-row">
+          <div class="stack-row-icon"><i class="iconoir-info-circle"></i></div>
+          <div class="stack-row-body"><div class="stack-row-title">Crampons for the arête walk</div><div class="stack-row-desc">Usually provided by your guide. Confirm in advance.</div></div>
+        </div>
+        <div class="stack-row">
+          <div class="stack-row-icon"><i class="iconoir-sun-light"></i></div>
+          <div class="stack-row-body"><div class="stack-row-title">Sunscreen essential</div><div class="stack-row-desc">Glacier UV is intense. Pack goggles and sunglasses too.</div></div>
+        </div>
+        <div class="stack-row">
+          <div class="stack-row-icon"><i class="iconoir-car"></i></div>
+          <div class="stack-row-body"><div class="stack-row-title">Uber: Chamonix → Courmayeur</div><div class="stack-row-desc">~€60–80, 35 min via Mont Blanc Tunnel</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="tip-card">
+      <h3><i class="iconoir-car"></i> Driving Notes</h3>
+      <table class="info-table">
+        <thead><tr><th>Route / Item</th><th>Cost / Note</th></tr></thead>
+        <tbody>
+          <tr><td>Mont Blanc Tunnel</td><td>~€60 return (car)</td></tr>
+          <tr><td>Great St Bernard Tunnel</td><td>~CHF 30 (car)</td></tr>
+          <tr><td>Swiss Vignette sticker</td><td>CHF 40 / year — required</td></tr>
+          <tr><td>Zermatt is car-free</td><td>Park at Täsch Matterhorn Terminal</td></tr>
+          <tr><td>Milan ZTL restricted zones</td><td>Check Hotel Indigo for advice</td></tr>
+          <tr><td>MXP → central Milan</td><td>~45–55 min by car</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tip-card">
+      <h3><i class="iconoir-dollar"></i> Money</h3>
+      <table class="info-table">
+        <thead><tr><th>Destination</th><th>Currency</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Italy — Courmayeur, Milan</td><td>Euro (€)</td><td>~10% tip appreciated; cards widely accepted</td></tr>
+          <tr><td>Switzerland — Zermatt</td><td>Swiss Franc (CHF)</td><td>Tip often included; budget CHF 30–50+ for lunch</td></tr>
+          <tr><td colspan="3" style="font-size:0.78rem;color:var(--muted);">Notify your bank before departure. Cards accepted everywhere.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tip-card">
+      <h3><i class="iconoir-cloud-sunny"></i> Weather (Late March – April)</h3>
+      <div class="stack-list">
+        <div class="stack-row">
+          <div class="stack-row-icon"><i class="iconoir-sun-light"></i></div>
+          <div class="stack-row-body"><div class="stack-row-title">Courmayeur — spring skiing</div><div class="stack-row-desc">Warm days, cold mornings and evenings. Get out early for the best snow.</div></div>
+        </div>
+        <div class="stack-row">
+          <div class="stack-row-icon"><i class="iconoir-snow-flake"></i></div>
+          <div class="stack-row-body"><div class="stack-row-title">Glacier terrain stays excellent in April</div><div class="stack-row-desc">Matterhorn area typically has strong spring snow coverage.</div></div>
+        </div>
+        <div class="stack-row">
+          <div class="stack-row-icon"><i class="iconoir-sun-light"></i></div>
+          <div class="stack-row-body"><div class="stack-row-title">Sunscreen is essential</div><div class="stack-row-desc">On the glacier and at altitude — UV is intense. Pack goggles and sunglasses.</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="tip-card">
+      <h3><i class="iconoir-globe"></i> Apps to Download</h3>
+      <table class="info-table">
+        <thead><tr><th>App</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><strong>SBB Mobile</strong></td><td>Swiss trains — Täsch ↔ Zermatt shuttle</td></tr>
+          <tr><td><strong>Trenitalia / Italo</strong></td><td>Italian trains (if needed)</td></tr>
+          <tr><td><strong>Uber</strong></td><td>Chamonix → Courmayeur on Tuesday</td></tr>
+          <tr><td><strong>Google Maps</strong></td><td>Download offline maps for Italy + Switzerland</td></tr>
+          <tr><td><strong>XE Currency</strong></td><td>Live EUR ↔ CHF ↔ USD rates</td></tr>
+          <tr><td><strong>Météo Suisse</strong></td><td>Reliable Swiss mountain weather</td></tr>
+          <tr><td><strong>Whiteroom</strong></td><td>Avalanche bulletin — check before Vallée Blanche</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     LIVE DATA
+══════════════════════════════════════════════ -->
+<div id="live" class="section">
+  <div class="section-header">
+    <span class="section-icon"><i class="iconoir-globe"></i></span>
+    <div>
+      <h2>Live Trip Data</h2>
+      <p class="dates" id="live-updated">Open-Meteo · Frankfurter · OpenStreetMap — all free, no tracking</p>
+    </div>
+    <button class="refresh-btn" onclick="loadAllLive()" style="margin-left:auto;">↻ Refresh</button>
+  </div>
+
+  <div class="live-grid">
+
+    <!-- COUNTDOWN -->
+    <div class="live-card">
+      <div class="live-card-hdr"><i class="iconoir-calendar"></i> Countdown to Departure</div>
+      <div class="live-card-body">
+        <div class="countdown" id="countdown-grid"></div>
+        <p class="cdown-msg" id="countdown-msg"></p>
+      </div>
+    </div>
+
+    <!-- CURRENCY -->
+    <div class="live-card">
+      <div class="live-card-hdr">
+        <i class="iconoir-dollar"></i> Live Exchange Rates
+        <span id="fx-date" style="font-weight:normal;letter-spacing:0;text-transform:none;font-size:0.75rem;"></span>
+      </div>
+      <div class="live-card-body">
+        <div id="fx-content"><div class="loading">Loading rates…</div></div>
+      </div>
+    </div>
+
+    <!-- MAP -->
+    <div class="live-card">
+      <div class="live-card-hdr"><i class="iconoir-map" style="font-size:1rem;margin-right:6px;"></i> Maps</div>
+      <div class="wx-tabs">
+        <button class="wx-tab active" onclick="showMapTab('map-route',this)"><i class="iconoir-compass"></i> Trip Route</button>
+        <button class="wx-tab cour"   onclick="showMapTab('map-cour',this)"><i class="iconoir-snow-flake"></i> Courmayeur</button>
+        <button class="wx-tab zerm"   onclick="showMapTab('map-zerm',this)"><i class="iconoir-snow-flake"></i> Zermatt</button>
+      </div>
+
+      <!-- Tab: Trip Route -->
+      <div id="map-route" class="map-panel active" style="padding:16px;">
+        <div id="trip-map"></div>
+        <div class="map-legend">
+          <div class="legend-item"><div class="legend-line" style="background:#2e7d32;"></div>Drive (Italy)</div>
+          <div class="legend-item"><div class="legend-line" style="background:#c62828;border-top:3px dashed #c62828;height:0;"></div>Train (Täsch→Zermatt)</div>
+          <div class="legend-item"><div class="legend-line" style="background:#6d4c41;"></div>Drive (to Milan)</div>
+          <div class="legend-item"><i class="iconoir-airplane" style="font-size:0.85rem;"></i> Airports &nbsp;<span style="color:#2e7d32;">●</span> Courmayeur &nbsp;<span style="color:#c62828;">●</span> Zermatt &nbsp;<span style="color:#6d4c41;">●</span> Milan</div>
+        </div>
+      </div>
+
+      <!-- Tab: Courmayeur Ski Map -->
+      <div id="map-cour" class="map-panel">
+        <div class="skimap-frame-wrap" style="height:460px;border-radius:0;">
+          <iframe
+            id="skimap-cour"
+            src="https://openskimap.org/?obj=349f901b7ae1ab9e324e59654d401933e7ff48ba"
+            class="skimap-frame"
+            title="Courmayeur Mont Blanc Ski Area Map"
+            loading="lazy"
+            sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+            onerror="this.style.display='none';this.nextElementSibling.classList.add('show')">
+          </iframe>
+          <div class="skimap-fallback">
+            <i class="iconoir-map skimap-fallback-icon"></i>
+            <p>Interactive map couldn't load inline.<br>Open it directly on OpenSkiMap.</p>
+            <a href="https://openskimap.org/?obj=349f901b7ae1ab9e324e59654d401933e7ff48ba" target="_blank"><i class="iconoir-compass"></i> View Courmayeur Ski Map</a>
+          </div>
+        </div>
+        <div style="padding:10px 14px;background:var(--bg);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-family:'Inter',system-ui,sans-serif;font-size:0.75rem;color:var(--muted);">Courmayeur Mont Blanc · Valle d'Aosta, Italy</span>
+          <a href="https://openskimap.org/?obj=349f901b7ae1ab9e324e59654d401933e7ff48ba" target="_blank" class="skimap-fullscreen">Open full map ↗</a>
+        </div>
+      </div>
+
+      <!-- Tab: Zermatt Ski Map -->
+      <div id="map-zerm" class="map-panel">
+        <div class="skimap-frame-wrap" style="height:460px;border-radius:0;">
+          <iframe
+            id="skimap-zerm"
+            src="https://openskimap.org/?obj=897905b0ef9ee21852d8c7866845ec12cf8513fb"
+            class="skimap-frame"
+            title="Zermatt Matterhorn Ski Area Map"
+            loading="lazy"
+            sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+            onerror="this.style.display='none';this.nextElementSibling.classList.add('show')">
+          </iframe>
+          <div class="skimap-fallback">
+            <i class="iconoir-map skimap-fallback-icon"></i>
+            <p>Interactive map couldn't load inline.<br>Open it directly on OpenSkiMap.</p>
+            <a href="https://openskimap.org/?obj=897905b0ef9ee21852d8c7866845ec12cf8513fb" target="_blank"><i class="iconoir-compass"></i> View Zermatt Ski Map</a>
+          </div>
+        </div>
+        <div style="padding:10px 14px;background:var(--bg);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-family:'Inter',system-ui,sans-serif;font-size:0.75rem;color:var(--muted);">Zermatt Matterhorn · Wallis, Switzerland · 360km pistes</span>
+          <a href="https://openskimap.org/?obj=897905b0ef9ee21852d8c7866845ec12cf8513fb" target="_blank" class="skimap-fullscreen">Open full map ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- WEATHER -->
+    <div class="live-card">
+      <div class="live-card-hdr"><i class="iconoir-cloud-sunny"></i> Mountain Weather Forecasts — Trip Dates Only</div>
+      <div class="wx-tabs">
+        <button class="wx-tab cour active" onclick="showWxTab('wx-cour',this)"><i class="iconoir-snow-flake"></i> Courmayeur</button>
+        <button class="wx-tab zerm"        onclick="showWxTab('wx-zerm',this)"><i class="iconoir-snow-flake"></i> Zermatt</button>
+        <button class="wx-tab"             onclick="showWxTab('wx-milan',this)"><i class="iconoir-city"></i> Milan</button>
+      </div>
+      <div id="wx-cour" class="wx-panel active"><div class="loading" style="padding:20px;">Loading weather…</div></div>
+      <div id="wx-zerm" class="wx-panel"><div class="loading" style="padding:20px;">Loading weather…</div></div>
+      <div id="wx-milan" class="wx-panel"><div class="loading" style="padding:20px;">Loading weather…</div></div>
+    </div>
+
+    <!-- FLIGHTS -->
+    <div class="live-card">
+      <div class="live-card-hdr"><i class="iconoir-airplane"></i> Flight Tracker</div>
+      <div class="live-card-body">
+        <div class="flight-row">
+          <div class="flight-num">DL 184</div>
+          <div class="flight-detail">
+            <div class="route">JFK → MXP &nbsp;·&nbsp; New York to Milan Malpensa</div>
+            <div class="times">Sat Mar 28 · Departs 9:55 PM EST &nbsp;·&nbsp; Arrives Sun Mar 29 11:49 AM CET</div>
+          </div>
+          <a href="https://www.flightaware.com/live/flight/DAL184" target="_blank" class="track-btn">Track ↗</a>
+        </div>
+        <div class="flight-row">
+          <div class="flight-num">DL 185</div>
+          <div class="flight-detail">
+            <div class="route">MXP → JFK &nbsp;·&nbsp; Milan Malpensa to New York</div>
+            <div class="times">Mon Apr 6 · Departs 2:15 PM CET &nbsp;·&nbsp; Arrives 5:35 PM EST</div>
+          </div>
+          <a href="https://www.flightaware.com/live/flight/DAL185" target="_blank" class="track-btn">Track ↗</a>
+        </div>
+        <p style="font-family:'Inter',system-ui,sans-serif;font-size:0.75rem;color:var(--muted);margin-top:10px;">
+          Live tracking powered by FlightAware. Links open Delta flight status in a new tab.
+        </p>
+      </div>
+    </div>
+
+  </div><!-- /live-grid -->
+</div><!-- /live section -->
+
+
+<!-- ══════════════════════════════════════════════
+     PHOTOS
+══════════════════════════════════════════════ -->
+<div id="photos" class="section">
+  <div class="section-header">
+    <span class="section-icon"><i class="iconoir-camera"></i></span>
+    <div>
+      <h2>Trip Photos</h2>
+      <p class="dates">Courmayeur · Zermatt · Milan &nbsp;·&nbsp; March–April 2026</p>
+    </div>
+  </div>
+
+  <div class="ph-card">
+    <div class="ph-card-hero">
+      <div class="ph-mountains"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:88px;height:88px;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.4))"><path fill="#3792CF" d="M64.224,34.453c-0.71-1.739-3.173-1.739-3.883,0l-24.51,60.039h52.903L64.224,34.453z"/><path fill="#6AC9CC" d="M34.616,45.115c-0.584-1.43-2.609-1.43-3.193,0L11.266,94.492h24.565l9.471-23.2L34.616,45.115z"/><circle fill="#FEE36F" cx="50" cy="17.705" r="9.036"/><path fill="#136296" d="M94.494,93.986h-5.42L64.692,34.262c-0.408-0.999-1.331-1.619-2.41-1.619c-1.078,0-2.002,0.62-2.409,1.619L45.302,69.954L35.084,44.924c-0.349-0.856-1.14-1.387-2.065-1.387s-1.715,0.531-2.065,1.387L10.926,93.986h-5.42C5.226,93.986,5,94.213,5,94.492s0.226,0.506,0.506,0.506h88.988c0.279,0,0.506-0.226,0.506-0.506S94.774,93.986,94.494,93.986z"/></svg></div>
+      <h3>Alps Trip Album</h3>
+      <p>All the best shots from Courmayeur, Zermatt &amp; Milan — shared with the whole group</p>
+      <a href="https://www.icloud.com/sharedalbum/#B1x5qXGF1DqW44" target="_blank" class="ph-open-btn">
+        <span class="btn-icon"><i class="iconoir-home-simple"></i></span> Open Shared Album
+      </a>
+    </div>
+    <div class="ph-card-footer">
+      <span><i class="iconoir-map-pin"></i> <b>3 destinations</b></span>
+      <span><i class="iconoir-calendar"></i> <b>Mar 28 – Apr 6</b></span>
+      <span><i class="iconoir-camera"></i> <b>Opens in Photos app on iPhone</b></span>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<footer>
+  <i class="iconoir-snow-flake"></i> Courmayeur &amp; Zermatt · March–April 2026 &nbsp;·&nbsp; Have an incredible trip!
+</footer>
+
+<script>
+  /* ── NAV & DAY CARDS ── */
+  let liveLoaded = false;
+  function showTab(id, btn) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    btn.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (id === 'live' && !liveLoaded) { liveLoaded = true; loadAllLive(); }
+  }
+  function toggleDay(header) { header.parentElement.classList.toggle('open'); }
+
+  /* ── WMO WEATHER CODES ── */
+  const WMO_ICON = {0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌦️',55:'🌦️',56:'🌦️',57:'🌦️',61:'🌧️',63:'🌧️',65:'🌧️',66:'🌧️',67:'🌧️',71:'❄️',73:'❄️',75:'❄️',77:'🌨️',80:'🌦️',81:'🌧️',82:'⛈️',85:'🌨️',86:'🌨️',95:'⛈️',96:'⛈️',99:'⛈️'};
+  const WMO_DESC = {0:'Clear sky',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Fog',48:'Freezing fog',51:'Light drizzle',53:'Drizzle',55:'Dense drizzle',61:'Light rain',63:'Moderate rain',65:'Heavy rain',71:'Light snow',73:'Snow',75:'Heavy snow',77:'Snow grains',80:'Rain showers',81:'Showers',82:'Heavy showers',85:'Snow showers',86:'Heavy snow showers',95:'Thunderstorm',96:'Thunderstorm+hail',99:'Heavy thunderstorm'};
+  const icon  = c => WMO_ICON[c]  || '🌡️';
+  const desc  = c => WMO_DESC[c]  || 'Unknown';
+  const toF   = c => Math.round(c * 9/5 + 32);
+  const fmt   = n => (n > 0 ? '+' : '') + Math.round(n);
+
+  function skiCond(code, minC, snowfall, wind) {
+    if (snowfall > 15) return { t:'❄️ Powder!',     bg:'#dbeafe', col:'#1d4ed8' };
+    if (snowfall > 3)  return { t:'🌨️ Fresh snow',  bg:'#e0f2fe', col:'#0369a1' };
+    if (code<=1 && minC<=0 && wind<50) return { t:'🎿 Perfect',  bg:'#dcfce7', col:'#15803d' };
+    if (code<=2 && minC<=5 && wind<60) return { t:'✅ Good',     bg:'#f0fdf4', col:'#16a34a' };
+    if (code>=71 && code<=77) return { t:'❄️ Snowing',   bg:'#dbeafe', col:'#1d4ed8' };
+    if (wind>=60)  return { t:'💨 Very windy',  bg:'#fef9c3', col:'#854d0e' };
+    if (code>=80)  return { t:'🌧️ Rain',         bg:'#fee2e2', col:'#b91c1c' };
+    return { t:'⛅ Fair',  bg:'#f3f4f6', col:'#4b5563' };
+  }
+
+  /* ── COUNTDOWN ── */
+  function renderCountdown() {
+    const dep = new Date('2026-03-28T21:55:00-05:00');
+    const now = new Date();
+    let diff = dep - now;
+    const grid = document.getElementById('countdown-grid');
+    const msg  = document.getElementById('countdown-msg');
+    if (diff <= 0) {
+      grid.innerHTML = '<p style="font-family:Arial,sans-serif;font-size:1rem;">✈️ Trip is underway — safe travels!</p>';
+      msg.textContent = '';
+      return;
+    }
+    const days  = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    const mins  = Math.floor((diff % 3600000)  / 60000);
+    const items = [[days,'Days'],[hours,'Hours'],[mins,'Mins']];
+    grid.innerHTML = items.map(([n,l]) => `
+      <div class="cdown-item">
+        <div class="cdown-num">${n}</div>
+        <div class="cdown-lbl">${l}</div>
+      </div>`).join('');
+    if (days === 0) msg.textContent = '🚨 Departure TODAY — head to JFK by 6:00 PM!';
+    else if (days === 1) msg.textContent = '✈️ One day to go — head to JFK tomorrow by 6:00 PM!';
+    else msg.textContent = `🎿 ${days} days until your Alps adventure begins!`;
+  }
+
+  /* ── CURRENCY ── */
+  async function loadCurrency() {
+    const el = document.getElementById('fx-content');
+    try {
+      const r = await fetch('https://api.frankfurter.app/latest?from=USD&to=EUR,CHF');
+      if (!r.ok) throw new Error();
+      const d = await r.json();
+      const eur = d.rates.EUR, chf = d.rates.CHF;
+      document.getElementById('fx-date').textContent = `as of ${d.date}`;
+      el.innerHTML = `
+        <div class="fx-grid">
+          <div class="fx-card">
+            <div class="fx-flag">🇪🇺</div>
+            <div class="fx-rate">${eur.toFixed(4)}</div>
+            <div class="fx-sub">EUR per 1 USD</div>
+            <div class="fx-sub" style="margin-top:4px;">$100 = €${(100*eur).toFixed(0)}</div>
+          </div>
+          <div class="fx-card">
+            <div class="fx-flag">🇨🇭</div>
+            <div class="fx-rate">${chf.toFixed(4)}</div>
+            <div class="fx-sub">CHF per 1 USD</div>
+            <div class="fx-sub" style="margin-top:4px;">$100 = CHF ${(100*chf).toFixed(0)}</div>
+          </div>
+        </div>
+        <p class="fx-updated">💡 Italy uses Euro · Switzerland uses Swiss Franc (typically ~10–15% stronger than EUR)</p>`;
+    } catch(e) {
+      el.innerHTML = '<p class="err">⚠️ Could not load rates. Check connection.</p>';
+    }
+  }
+
+  /* ── MAP ── */
+  let mapInit = false;
+  function initMap() {
+    if (mapInit) return; mapInit = true;
+    const map = L.map('trip-map', { scrollWheelZoom: false }).setView([46.0, 7.8], 7);
+    window._tripMap = map;
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OSM</a> © <a href="https://carto.com/">CARTO</a>',
+      maxZoom: 18
+    }).addTo(map);
+
+    const P = {
+      mxp:        [45.6306,  8.7231],
+      courmayeur: [45.7962,  6.9728],
+      tasch:      [46.0639,  7.7878],
+      zermatt:    [46.0207,  7.7491],
+      milan:      [45.4654,  9.1859]
+    };
+
+    // Route lines
+    L.polyline([P.mxp, P.courmayeur],   {color:'#2e7d32', weight:3.5}).addTo(map).bindPopup('🚗 Drive: MXP → Courmayeur (~1h 45min) · Mar 29');
+    L.polyline([P.courmayeur, P.tasch], {color:'#2e7d32', weight:3.5}).addTo(map).bindPopup('🚗 Drive: Courmayeur → Täsch (~2h 45min) · Apr 2');
+    L.polyline([P.tasch, P.zermatt],    {color:'#c62828', weight:3,   dashArray:'7 5'}).addTo(map).bindPopup('🚞 Shuttle train: Täsch → Zermatt (12 min) · Apr 2');
+    L.polyline([P.tasch, P.milan],      {color:'#6d4c41', weight:3.5}).addTo(map).bindPopup('🚗 Drive: Täsch → Milan (~3h 30min) · Apr 5');
+    L.polyline([P.milan, P.mxp],        {color:'#6d4c41', weight:3.5}).addTo(map).bindPopup('🚗 Drive: Milan → MXP (~45min) · Apr 6');
+
+    // Custom markers
+    const mk = (emoji, color) => L.divIcon({
+      html: `<div style="background:${color};border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:15px;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.35);">${emoji}</div>`,
+      className:'', iconSize:[32,32], iconAnchor:[16,16], popupAnchor:[0,-16]
+    });
+
+    L.marker(P.mxp,        {icon:mk('✈️','#455a64')}).addTo(map).bindPopup('✈️ <strong>Milan Malpensa (MXP)</strong><br>Arrive Mar 29 · Budget car hire<br>Depart Apr 6 on DL 185');
+    L.marker(P.courmayeur, {icon:mk('🎿','#2e7d32')}).addTo(map).bindPopup('🎿 <strong>Courmayeur</strong><br>Le Géant Apartments (Marriott)<br>Mar 29 – Apr 2 · 4 nights<br>Ski area + Vallée Blanche');
+    L.marker(P.tasch,      {icon:mk('🚗','#546e7a')}).addTo(map).bindPopup('🚗 <strong>Matterhorn Terminal Täsch</strong><br>Park car here · Take shuttle to Zermatt');
+    L.marker(P.zermatt,    {icon:mk('⛷️','#c62828')}).addTo(map).bindPopup('⛷️ <strong>Zermatt</strong><br>Hotel Alpen Resort & SPA<br>Apr 2 – Apr 5 · 3 nights<br>Ben\'s 50th 🎉 · Chez Vrony · @paradise');
+    L.marker(P.milan,      {icon:mk('🏙️','#6d4c41')}).addTo(map).bindPopup('🏙️ <strong>Milan</strong><br>Hotel Indigo – Corso Monforte<br>Apr 5 – Apr 6 · 1 night');
+
+    map.fitBounds(Object.values(P), {padding:[28,28]});
+  }
+
+  /* ── WEATHER ── */
+  const LOCS = {
+    'wx-cour':  { lat:45.8133, lon:6.9650,  tz:'Europe%2FRome',   dates:['2026-03-29','2026-03-30','2026-03-31','2026-04-01'], ski:true,  note:'Temperatures shown for ski area (~2,200m). Expect valley floor to be ~6–8°C warmer.' },
+    'wx-zerm':  { lat:45.9760, lon:7.7415,  tz:'Europe%2FZurich', dates:['2026-04-02','2026-04-03','2026-04-04'],               ski:true,  note:'Temperatures shown for ski area (~2,900m). Zermatt village (~1,620m) will be notably warmer.' },
+    'wx-milan': { lat:45.4654, lon:9.1859,  tz:'Europe%2FRome',   dates:['2026-04-05','2026-04-06'],                            ski:false, note:'Milan city centre forecast.' }
+  };
+  const wxCache = {};
+
+  async function loadWeather(panelId) {
+    const panel = document.getElementById(panelId);
+    if (wxCache[panelId]) { panel.innerHTML = wxCache[panelId]; return; }
+    panel.innerHTML = '<div class="loading" style="padding:20px;">⏳ Loading weather…</div>';
+    const loc = LOCS[panelId];
+    try {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&daily=weathercode,temperature_2m_max,temperature_2m_min,snowfall_sum,windspeed_10m_max&current_weather=true&timezone=${loc.tz}&forecast_days=16`;
+      const r = await fetch(url);
+      if (!r.ok) throw new Error();
+      const d = await r.json();
+
+      const todayStr = new Date().toISOString().slice(0,10);
+      const days = d.daily.time.map((dt, i) => ({
+        date: dt,
+        code: d.daily.weathercode[i],
+        maxC: d.daily.temperature_2m_max[i],
+        minC: d.daily.temperature_2m_min[i],
+        snow: d.daily.snowfall_sum[i] || 0,
+        wind: d.daily.windspeed_10m_max[i] || 0
+      })).filter(x => loc.dates.includes(x.date));
+
+      const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      const MONTH_ABBR = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+      const cards = days.map(day => {
+        const dt = new Date(day.date + 'T12:00:00');
+        const dayName  = DAY_NAMES[dt.getDay()];
+        const dateLbl  = `${MONTH_ABBR[dt.getMonth()]} ${dt.getDate()}`;
+        const isToday  = day.date === todayStr;
+        const snowDay  = day.snow > 1;
+        const sc       = loc.ski ? skiCond(day.code, day.minC, day.snow, day.wind) : null;
+        const snowHtml = day.snow > 0.2 ? `<div class="wx-snow">❄️ ${day.snow.toFixed(1)} cm</div>` : '';
+        const windHtml = `<div class="wx-wind">💨 ${Math.round(day.wind)} km/h</div>`;
+        const scHtml   = sc ? `<div class="ski-cond" style="background:${sc.bg};color:${sc.col};">${sc.t}</div>` : '';
+        return `
+          <div class="wx-day${snowDay?' snow-day':''}${isToday?' today':''}">
+            <div class="wx-date-lbl">${dayName}</div>
+            <div class="wx-date-lbl">${dateLbl}</div>
+            <div class="wx-icon">${icon(day.code)}</div>
+            <div class="wx-desc">${desc(day.code)}</div>
+            <div class="wx-temps">${fmt(day.maxC)}°C / ${toF(day.maxC)}°F<br><span class="lo">${fmt(day.minC)}°C / ${toF(day.minC)}°F</span></div>
+            ${snowHtml}${windHtml}${scHtml}
+          </div>`;
+      }).join('');
+
+      const html = `
+        <div class="wx-scroll">${cards || '<p style="font-family:Arial;font-size:0.85rem;color:#888;padding:8px;">Forecast not yet available for these dates.</p>'}</div>
+        <p class="wx-note">ℹ️ ${loc.note} Source: <a href="https://open-meteo.com" target="_blank" style="color:var(--primary);">Open-Meteo</a> (free, no tracking).</p>`;
+      wxCache[panelId] = html;
+      panel.innerHTML = html;
+    } catch(e) {
+      panel.innerHTML = '<p class="err" style="padding:16px;">⚠️ Weather unavailable. Check connection and try refreshing.</p>';
+    }
+  }
+
+  function showWxTab(id, btn) {
+    document.querySelectorAll('.wx-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.wx-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    btn.classList.add('active');
+    loadWeather(id);
+  }
+
+  function showMapTab(id, btn) {
+    const card = btn.closest('.live-card');
+    card.querySelectorAll('.map-panel').forEach(p => p.classList.remove('active'));
+    card.querySelectorAll('.wx-tab').forEach(b => b.classList.remove('active'));
+    card.querySelector('#' + id).classList.add('active');
+    btn.classList.add('active');
+    // Invalidate Leaflet size when switching back to route tab
+    if (id === 'map-route' && window._tripMap) {
+      setTimeout(() => window._tripMap.invalidateSize(), 50);
+    }
+  }
+
+  /* ── LOAD ALL ── */
+  function loadAllLive() {
+    Object.keys(wxCache).forEach(k => delete wxCache[k]);
+    renderCountdown();
+    loadCurrency();
+    setTimeout(initMap, 100);
+    loadWeather('wx-cour');
+    document.getElementById('live-updated').textContent =
+      `Last refreshed: ${new Date().toLocaleTimeString()} · Open-Meteo · Frankfurter · OpenStreetMap`;
+  }
+
+  /* ════════════════════════════════════════
+     PHOTOS TAB — link card, no API calls
+  ════════════════════════════════════════ */
+  // Album opens directly via the link in the card — nothing to initialize.
+</script>
+</body>
+</html>
